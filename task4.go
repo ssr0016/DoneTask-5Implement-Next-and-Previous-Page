@@ -64,12 +64,12 @@ func (s *store) getPreviousPageBankByID(ctx context.Context, bankID int64) (*ban
 				update_by,
 				update_at
 			FROM bank
-			WHERE update_at > (SELECT update_at FROM bank WHERE id = ?)
-			ORDER BY update_at ASC
-			LIMIT 1
+			WHERE (update_at > (SELECT update_at FROM bank WHERE id = ?) OR (update_at = (SELECT update_at FROM bank WHERE id = ?) AND id < ?))
+			ORDER BY update_at ASC, id ASC
+			 LIMIT 1
 		`
 
-		err := tx.Get(ctx, &result, rawSQL, bankID)
+		err := tx.Get(ctx, &result, rawSQL, bankID, bankID, bankID)
 		if err != nil {
 			return err
 		}
